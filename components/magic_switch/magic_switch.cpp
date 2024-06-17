@@ -16,8 +16,15 @@ void MagicSwitch::loop() {
   uint32_t pulse = this->pulse_;
   this->pulse_ = 0;
   if (pulse) {
-    ESP_LOGD(TAG, "detected pulse of %uus", pulse);
-    this->switch_trigger_->trigger();
+    uint32_t now = micros();
+    if (now - this->last_triggered_at_ > this->debounce_) {
+      this->last_triggered_at_ = now;
+
+      ESP_LOGD(TAG, "detected pulse of %uus", pulse);
+      this->switch_trigger_->trigger();
+    } else {
+      ESP_LOGD(TAG, "debounced: %uus", now - this->last_triggered_at_);
+    }
   }
 }
 
@@ -26,6 +33,8 @@ float MagicSwitch::get_setup_priority() const { return setup_priority::DATA; }
 void MagicSwitch::dump_config() {
   ESP_LOGCONFIG(TAG, "");
   LOG_PIN("  Pin: ", this->pin_);
+  ESP_LOGD(TAG, "  Timeout: %d", this->timeout_);
+  ESP_LOGD(TAG, "  Debounce: %d", this->debounce_);
 }
 
 void IRAM_ATTR HOT MagicSwitch::edge_intr(MagicSwitch *comp) {

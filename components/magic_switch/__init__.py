@@ -18,6 +18,7 @@ magic_switch_ns = cg.esphome_ns.namespace("magic_switch")
 MagicSwitch = magic_switch_ns.class_("MagicSwitch", cg.Component)
 
 CONF_ON_SWITCH = "on_switch"
+CONF_DEBOUNCE = "debounce"
 
 CONFIG_SCHEMA = cv.COMPONENT_SCHEMA.extend(
     {
@@ -25,6 +26,7 @@ CONFIG_SCHEMA = cv.COMPONENT_SCHEMA.extend(
         cv.Required(CONF_PIN): pins.internal_gpio_input_pin_schema,
         cv.Optional(CONF_ON_SWITCH): automation.validate_automation(single=True),
         cv.Optional(CONF_TIMEOUT, default="12ms"): cv.positive_time_period_microseconds,
+        cv.Optional(CONF_DEBOUNCE, default="40ms"): cv.positive_time_period_microseconds,
     }
 )
 
@@ -36,5 +38,7 @@ async def to_code(config):
     pin = await cg.gpio_pin_expression(config[CONF_PIN])
     cg.add(var.set_pin(pin))
     cg.add(var.set_timeout(config[CONF_TIMEOUT]))
+    cg.add(var.set_debounce(config[CONF_DEBOUNCE]))
+
     if conf := config.get(CONF_ON_SWITCH):
         await automation.build_automation(var.get_switch_trigger(), [], conf)

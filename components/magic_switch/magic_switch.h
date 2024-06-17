@@ -16,11 +16,14 @@ class MagicSwitch : public Component {
 
   void set_pin(InternalGPIOPin *pin) { this->pin_ = pin; }
   void set_timeout(uint32_t timeout) { this->timeout_ = timeout; }
+  void set_debounce(uint32_t debounce) { this->debounce_ = debounce; }
   Trigger<> *get_switch_trigger() const { return switch_trigger_; }
 
  protected:
   InternalGPIOPin *pin_{nullptr};
   uint32_t timeout_;
+  uint32_t debounce_;
+  uint32_t last_triggered_at_{0};
   Trigger<> *switch_trigger_ = new Trigger<>();
 
   static void edge_intr(MagicSwitch *comp);
